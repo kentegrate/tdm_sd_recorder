@@ -1,0 +1,4 @@
+../Core/Src/audio_sd.c:39:6:sd_card_init	2
+../Core/Src/audio_sd.c:54:6:start_recording	2
+../Core/Src/audio_sd.c:99:6:write2wave_file	4
+../Core/Src/audio_sd.c:122:6:stop_recording	2
