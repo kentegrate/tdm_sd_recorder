@@ -48,6 +48,8 @@ void sd_card_init()
 	else
 	{
 		printf("succeded in mounting an sd card \n");
+	    printf("sdCard.fs_type = %d\n", sdCard.fs_type); // Check if fs_type is set
+
 	}
 }
 
@@ -81,7 +83,7 @@ void start_recording(uint32_t fs, char* file_name, uint8_t n_channels)
 	//file_counter++;
 
 	// creating a file
-	sd_result = f_open(&wavFile ,file_name, FA_WRITE|FA_CREATE_ALWAYS);
+	sd_result = f_open(&wavFile ,"0:/test2.wav", FA_WRITE|FA_CREATE_ALWAYS);
 	if(sd_result != 0)
 	{
 		printf("error in creating a file: %d \n", sd_result);
@@ -92,6 +94,7 @@ void start_recording(uint32_t fs, char* file_name, uint8_t n_channels)
 		printf("succeeded in opening a file \n");
 	}
 	wav_file_size = 0;
+	HAL_Delay(100);
 
 
 }
