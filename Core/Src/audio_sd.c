@@ -22,13 +22,13 @@
 // 24 - 27 -> sample rate,                                  32 kHz	{0x80, 0x7d, 0x00, 0x00}
 // 28 - 31 -> sample rate x bytes per sample x channels                  19200   {0x00, 0xf4, 0x01, 0x00 }
 // 32 - 33 -> bytes per sample * channels                                4		{0x04, 0x00}
-// 34 - 35 -> bits per sample				                16		{0x10, 0x00}
+// 34 - 35 -> bits per sample				                32		{0x20, 0x00}
 // 36 - 39 -> "data" 												{0x64, 0x61, 0x74, 0x61}
 // 40 - 43 -> size of the data section								{data section size}
 //	data
 static uint8_t wav_file_header[44]={0x52, 0x49, 0x46, 0x46, 0xa4, 0xa9, 0x03, 0x00, 0x57 ,0x41, 0x56, 0x45, 0x66, 0x6d,
 		0x74, 0x20, 0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x80, 0x7d, 0x00, 0x00, 0x00, 0xf4, 0x01, 0x00,
-		0x04, 0x00, 0x10, 0x00, 0x64, 0x61, 0x74, 0x61, 0x80, 0xa9, 0x03, 0x00};
+		0x04, 0x00, 0x20, 0x00, 0x64, 0x61, 0x74, 0x61, 0x80, 0xa9, 0x03, 0x00};
 
 
 static FRESULT sd_result;
@@ -56,6 +56,8 @@ void sd_card_init()
 void start_recording(uint32_t fs, char* file_name, uint8_t n_channels)
 {
 	//static char file_name[] = "w_000.wav";
+	uint32_t temp_number;
+
 	static uint8_t file_counter = 10;
 	//int file_number_digits = file_counter;
 	uint32_t byte_rate = fs * 4 * n_channels; // fs * 32 bit (4 bytes) x n_channels
@@ -96,21 +98,19 @@ void start_recording(uint32_t fs, char* file_name, uint8_t n_channels)
 	wav_file_size = 0;
 	HAL_Delay(100);
 
-
+	sd_result = f_write(&wavFile,(void *)wav_file_header, sizeof(wav_file_header),(UINT*)&temp_number);
+	if(sd_result != 0)
+	{
+		printf("error in writing the first sector: %d \n", sd_result);
+		while(1);
+	}
 }
 
 void write2wave_file(uint8_t *data, uint16_t data_size) // data size is in bytes.
 {
 	uint32_t temp_number;
 	printf("w\n");
-	if(first_time == 0)
-	{
-		for(int i = 0; i < 44; i++)
-		{
-			*(data + i) = wav_file_header[i];
-		}
-		first_time = 1;
-	}
+
 
 	sd_result = f_write(&wavFile,(void *)data, data_size,(UINT*)&temp_number);
 
@@ -139,7 +139,7 @@ void stop_recording()
 
 	// moving to the beginning of the file to update the file format
 	f_lseek(&wavFile, 0);
-	f_write(&wavFile,(void *)wav_file_header, sizeof(wav_file_header),(UINT*)&temp_number);
+	sd_result = f_write(&wavFile,(void *)wav_file_header, sizeof(wav_file_header),(UINT*)&temp_number);
 	if(sd_result != 0)
 	{
 		printf("error in updating the first sector: %d \n", sd_result);
@@ -147,5 +147,6 @@ void stop_recording()
 	}
 	f_close(&wavFile);
 	first_time = 0;
+	printf("wrote %ld bytes.\n", wav_file_size);
 	printf("closed the file \n");
 }

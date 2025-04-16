@@ -35,7 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define WAV_WRITE_SAMPLE_COUNT 128
+#define WAV_WRITE_SAMPLE_COUNT 960
 #define CMD_BUFFER_SIZE 64
 
 /* USER CODE END PD */
@@ -180,12 +180,19 @@ int main(void)
 
 	  if(recording_state && half_tdm)
 	  {
+
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
 		  write2wave_file(((uint8_t*)data_tdm),	 sizeof(data_tdm)/2); // half count * 4 byte per sample
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
+
 		  half_tdm = 0;
 	  }
 	  if(recording_state && full_tdm)
 	  {
+		  //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
 		  write2wave_file(((uint8_t*)data_tdm) + sizeof(data_tdm)/2, sizeof(data_tdm)/2);
+		  //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
+
 		  full_tdm = 0;
 	  }
   }
@@ -274,7 +281,7 @@ static void MX_SAI2_Init(void)
   hsai_BlockA2.FrameInit.ActiveFrameLength = 1;
   hsai_BlockA2.FrameInit.FSDefinition = SAI_FS_STARTFRAME;
   hsai_BlockA2.FrameInit.FSPolarity = SAI_FS_ACTIVE_HIGH;
-  hsai_BlockA2.FrameInit.FSOffset = SAI_FS_FIRSTBIT;
+  hsai_BlockA2.FrameInit.FSOffset = SAI_FS_BEFOREFIRSTBIT;
   hsai_BlockA2.SlotInit.FirstBitOffset = 0;
   hsai_BlockA2.SlotInit.SlotSize = SAI_SLOTSIZE_32B;
   hsai_BlockA2.SlotInit.SlotNumber = 8;
@@ -390,6 +397,9 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5|GPIO_PIN_6, GPIO_PIN_RESET);
+
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
@@ -410,6 +420,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PC5 PC6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PC9 */
   GPIO_InitStruct.Pin = GPIO_PIN_9;
@@ -432,13 +449,14 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_SAI_RxCpltCallback(SAI_HandleTypeDef *hsai)
 {
-
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
 	full_tdm = 1;
 	sample_tdm = data_tdm[0];
 }
 void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hsai)
 {
 	//sample_i2s = data_i2s[0];
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
 	half_tdm= 1;
 	sample_tdm = data_tdm[WAV_WRITE_SAMPLE_COUNT/2];
 }
@@ -448,7 +466,7 @@ void StartRecording(char *filename) {
     UART_SendString(&huart2, uart_tx_buffer);
     // Implement file opening/creation here
     start_recording(SAI_AUDIO_FREQUENCY_48K, filename, (uint8_t)hsai_BlockA2.SlotInit.SlotNumber);
-    HAL_SAI_Receive_DMA(&hsai_BlockA2, (uint8_t *)data_tdm, WAV_WRITE_SAMPLE_COUNT);
+    HAL_SAI_Receive_DMA(&hsai_BlockA2, (uint8_t *)data_tdm, WAV_WRITE_SAMPLE_COUNT); // THIS SHOULD NOT BE NUMBER OF BYTES!!!
 
 }
 
