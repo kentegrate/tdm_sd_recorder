@@ -35,7 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define WAV_WRITE_SAMPLE_COUNT 960
+#define WAV_WRITE_SAMPLE_COUNT 12288
 #define CMD_BUFFER_SIZE 64
 
 /* USER CODE END PD */
@@ -46,8 +46,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-SAI_HandleTypeDef hsai_BlockA2;
-DMA_HandleTypeDef hdma_sai2_a;
+SAI_HandleTypeDef hsai_BlockA1;
+DMA_HandleTypeDef hdma_sai1_a;
 
 SD_HandleTypeDef hsd1;
 
@@ -73,7 +73,7 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SDMMC1_SD_Init(void);
-static void MX_SAI2_Init(void);
+static void MX_SAI1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -154,7 +154,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
-  MX_SAI2_Init();
+  MX_SAI1_Init();
   /* USER CODE BEGIN 2 */
   sd_card_init();
 
@@ -189,9 +189,9 @@ int main(void)
 	  }
 	  if(recording_state && full_tdm)
 	  {
-		  //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
+		//  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
 		  write2wave_file(((uint8_t*)data_tdm) + sizeof(data_tdm)/2, sizeof(data_tdm)/2);
-		  //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
+		 // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
 
 		  full_tdm = 0;
 	  }
@@ -249,50 +249,50 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief SAI2 Initialization Function
+  * @brief SAI1 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_SAI2_Init(void)
+static void MX_SAI1_Init(void)
 {
 
-  /* USER CODE BEGIN SAI2_Init 0 */
+  /* USER CODE BEGIN SAI1_Init 0 */
 
-  /* USER CODE END SAI2_Init 0 */
+  /* USER CODE END SAI1_Init 0 */
 
-  /* USER CODE BEGIN SAI2_Init 1 */
+  /* USER CODE BEGIN SAI1_Init 1 */
 
-  /* USER CODE END SAI2_Init 1 */
-  hsai_BlockA2.Instance = SAI2_Block_A;
-  hsai_BlockA2.Init.Protocol = SAI_FREE_PROTOCOL;
-  hsai_BlockA2.Init.AudioMode = SAI_MODEMASTER_RX;
-  hsai_BlockA2.Init.DataSize = SAI_DATASIZE_32;
-  hsai_BlockA2.Init.FirstBit = SAI_FIRSTBIT_MSB;
-  hsai_BlockA2.Init.ClockStrobing = SAI_CLOCKSTROBING_RISINGEDGE;
-  hsai_BlockA2.Init.Synchro = SAI_ASYNCHRONOUS;
-  hsai_BlockA2.Init.OutputDrive = SAI_OUTPUTDRIVE_DISABLE;
-  hsai_BlockA2.Init.NoDivider = SAI_MASTERDIVIDER_ENABLE;
-  hsai_BlockA2.Init.FIFOThreshold = SAI_FIFOTHRESHOLD_EMPTY;
-  hsai_BlockA2.Init.AudioFrequency = SAI_AUDIO_FREQUENCY_48K;
-  hsai_BlockA2.Init.SynchroExt = SAI_SYNCEXT_DISABLE;
-  hsai_BlockA2.Init.MonoStereoMode = SAI_STEREOMODE;
-  hsai_BlockA2.Init.CompandingMode = SAI_NOCOMPANDING;
-  hsai_BlockA2.FrameInit.FrameLength = 256;
-  hsai_BlockA2.FrameInit.ActiveFrameLength = 1;
-  hsai_BlockA2.FrameInit.FSDefinition = SAI_FS_STARTFRAME;
-  hsai_BlockA2.FrameInit.FSPolarity = SAI_FS_ACTIVE_HIGH;
-  hsai_BlockA2.FrameInit.FSOffset = SAI_FS_BEFOREFIRSTBIT;
-  hsai_BlockA2.SlotInit.FirstBitOffset = 0;
-  hsai_BlockA2.SlotInit.SlotSize = SAI_SLOTSIZE_32B;
-  hsai_BlockA2.SlotInit.SlotNumber = 8;
-  hsai_BlockA2.SlotInit.SlotActive = 0x0000FFFF;
-  if (HAL_SAI_Init(&hsai_BlockA2) != HAL_OK)
+  /* USER CODE END SAI1_Init 1 */
+  hsai_BlockA1.Instance = SAI1_Block_A;
+  hsai_BlockA1.Init.Protocol = SAI_FREE_PROTOCOL;
+  hsai_BlockA1.Init.AudioMode = SAI_MODEMASTER_RX;
+  hsai_BlockA1.Init.DataSize = SAI_DATASIZE_32;
+  hsai_BlockA1.Init.FirstBit = SAI_FIRSTBIT_MSB;
+  hsai_BlockA1.Init.ClockStrobing = SAI_CLOCKSTROBING_RISINGEDGE;
+  hsai_BlockA1.Init.Synchro = SAI_ASYNCHRONOUS;
+  hsai_BlockA1.Init.OutputDrive = SAI_OUTPUTDRIVE_DISABLE;
+  hsai_BlockA1.Init.NoDivider = SAI_MASTERDIVIDER_ENABLE;
+  hsai_BlockA1.Init.FIFOThreshold = SAI_FIFOTHRESHOLD_EMPTY;
+  hsai_BlockA1.Init.AudioFrequency = SAI_AUDIO_FREQUENCY_48K;
+  hsai_BlockA1.Init.SynchroExt = SAI_SYNCEXT_DISABLE;
+  hsai_BlockA1.Init.MonoStereoMode = SAI_STEREOMODE;
+  hsai_BlockA1.Init.CompandingMode = SAI_NOCOMPANDING;
+  hsai_BlockA1.FrameInit.FrameLength = 128;
+  hsai_BlockA1.FrameInit.ActiveFrameLength = 1;
+  hsai_BlockA1.FrameInit.FSDefinition = SAI_FS_STARTFRAME;
+  hsai_BlockA1.FrameInit.FSPolarity = SAI_FS_ACTIVE_HIGH;
+  hsai_BlockA1.FrameInit.FSOffset = SAI_FS_BEFOREFIRSTBIT;
+  hsai_BlockA1.SlotInit.FirstBitOffset = 0;
+  hsai_BlockA1.SlotInit.SlotSize = SAI_SLOTSIZE_32B;
+  hsai_BlockA1.SlotInit.SlotNumber = 4;
+  hsai_BlockA1.SlotInit.SlotActive = 0x0000FFFF;
+  if (HAL_SAI_Init(&hsai_BlockA1) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN SAI2_Init 2 */
+  /* USER CODE BEGIN SAI1_Init 2 */
 
-  /* USER CODE END SAI2_Init 2 */
+  /* USER CODE END SAI1_Init 2 */
 
 }
 
@@ -315,9 +315,9 @@ static void MX_SDMMC1_SD_Init(void)
   hsd1.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
   hsd1.Init.ClockBypass = SDMMC_CLOCK_BYPASS_DISABLE;
   hsd1.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_DISABLE;
-  hsd1.Init.BusWide = SDMMC_BUS_WIDE_1B;
+  hsd1.Init.BusWide = SDMMC_BUS_WIDE_4B;
   hsd1.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd1.Init.ClockDiv = 8;
+  hsd1.Init.ClockDiv = 12;
   /* USER CODE BEGIN SDMMC1_Init 2 */
   hsd1.Init.BusWide = SDMMC_BUS_WIDE_1B;
 
@@ -367,12 +367,12 @@ static void MX_DMA_Init(void)
 {
 
   /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
+  __HAL_RCC_DMA2_CLK_ENABLE();
 
   /* DMA interrupt init */
-  /* DMA1_Channel6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
+  /* DMA2_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Channel1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Channel1_IRQn);
 
 }
 
@@ -428,14 +428,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PC9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_9;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF13_SAI2;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
   /*Configure GPIO pin : PB4 */
   GPIO_InitStruct.Pin = GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -465,13 +457,13 @@ void StartRecording(char *filename) {
     snprintf(uart_tx_buffer, sizeof(uart_tx_buffer), "Starting recording to file: %s\r\n", filename);
     UART_SendString(&huart2, uart_tx_buffer);
     // Implement file opening/creation here
-    start_recording(SAI_AUDIO_FREQUENCY_48K, filename, (uint8_t)hsai_BlockA2.SlotInit.SlotNumber);
-    HAL_SAI_Receive_DMA(&hsai_BlockA2, (uint8_t *)data_tdm, WAV_WRITE_SAMPLE_COUNT); // THIS SHOULD NOT BE NUMBER OF BYTES!!!
+    start_recording(SAI_AUDIO_FREQUENCY_48K, filename, (uint8_t)hsai_BlockA1.SlotInit.SlotNumber);
+    HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t *)data_tdm, WAV_WRITE_SAMPLE_COUNT); // THIS SHOULD NOT BE NUMBER OF BYTES!!!
 
 }
 
 void StopRecording() {
-	HAL_SAI_DMAStop(&hsai_BlockA2);
+	HAL_SAI_DMAStop(&hsai_BlockA1);
     UART_SendString(&huart2, "Stopping recording\r\n");
     // Implement file closing and clean-up here
     stop_recording();
