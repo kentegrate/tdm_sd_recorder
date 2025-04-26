@@ -64,6 +64,7 @@ char uart_tx_buffer[CMD_BUFFER_SIZE];
 volatile uint8_t uart_rx_index = 0;
 volatile int command_received = 0;
 volatile int recording_state = 0; // 0 for stopped, 1 for recording
+int sd_init_done = 0;
 
 /* USER CODE END PV */
 
@@ -110,7 +111,19 @@ void process_command(char *command) {
         StopRecording();
     } else if (strcmp(command, "c") == 0) {
         SendCurrentStatus();
-    } else {
+
+    } else if (strcmp(command, "u") == 0){
+    	sd_card_deinit();
+    } else if (strcmp(command, "m") == 0){
+    	if (!sd_init_done){
+	    MX_SDMMC1_SD_Init();
+	    MX_FATFS_Init();
+	    sd_init_done = 1;
+    	}
+    	sd_card_init();
+    }
+
+    else {
         IndicateInvalidCommand();
     }
 }
@@ -152,11 +165,9 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART2_UART_Init();
-  MX_SDMMC1_SD_Init();
-  MX_FATFS_Init();
   MX_SAI1_Init();
   /* USER CODE BEGIN 2 */
-  sd_card_init();
+ // sd_card_init();
 
   /* USER CODE END 2 */
 
@@ -319,7 +330,7 @@ static void MX_SDMMC1_SD_Init(void)
   hsd1.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
   hsd1.Init.ClockDiv = 12;
   /* USER CODE BEGIN SDMMC1_Init 2 */
-  hsd1.Init.BusWide = SDMMC_BUS_WIDE_1B;
+  //hsd1.Init.BusWide = SDMMC_BUS_WIDE_1B;
 
   /* USER CODE END SDMMC1_Init 2 */
 
@@ -454,6 +465,10 @@ void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hsai)
 }
 
 void StartRecording(char *filename) {
+	if (!is_mounted()){
+	    snprintf(uart_tx_buffer, sizeof(uart_tx_buffer), "Please mount before recording. \r\n");
+		return;
+	}
     snprintf(uart_tx_buffer, sizeof(uart_tx_buffer), "Starting recording to file: %s\r\n", filename);
     UART_SendString(&huart2, uart_tx_buffer);
     // Implement file opening/creation here

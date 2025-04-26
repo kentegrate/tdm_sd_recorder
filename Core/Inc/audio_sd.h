@@ -13,8 +13,9 @@
 
 
 //#define WAV_WRITE_SAMPLE_COUNT 2048
-
+int is_mounted();
 void sd_card_init();
+void sd_card_deinit();
 void start_recording(uint32_t fs, char* file_name, uint8_t n_channels);
 void write2wave_file(uint8_t *data, uint16_t data_size);
 void stop_recording();

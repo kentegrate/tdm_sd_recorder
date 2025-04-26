@@ -36,8 +36,17 @@ static FATFS sdCard;
 static FIL wavFile;
 static uint32_t wav_file_size;
 static uint8_t first_time = 0;
+static int mounted = 0;
+
+int is_mounted(){
+	return mounted;
+}
 void sd_card_init()
 {
+	if (is_mounted()){
+		printf("already mounted.");
+		return;
+	}
 	//	mounting an sd card
 	sd_result = f_mount(&sdCard,SDPath, 1);
 	if(sd_result != 0)
@@ -49,6 +58,28 @@ void sd_card_init()
 	{
 		printf("succeded in mounting an sd card \n");
 	    printf("sdCard.fs_type = %d\n", sdCard.fs_type); // Check if fs_type is set
+	    mounted = 1;
+
+	}
+}
+
+void sd_card_deinit()
+{
+	if (!is_mounted()){
+		printf("already unmounted.");
+		return;
+	}
+	//	mounting an sd card
+	sd_result = f_mount(0, SDPath, 0);
+	if(sd_result != 0)
+	{
+		printf("error in unmounting an sd card: %d \n", sd_result);
+		while(1);
+	}
+	else
+	{
+		printf("succeded in unmounting an sd card \n");
+		mounted = 0;
 
 	}
 }
